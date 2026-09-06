@@ -29,10 +29,11 @@ it is talking to.
 
 | Source | Status | Notes |
 |---|---|---|
-| `SimConnectSource` | **default** | Reads LVARs directly. Native P/Invoke into `SimConnect.dll`; no managed wrapper. Values pushed by the sim per frame. |
-| `FsuipcLuaSource` | fallback, `--fsuipc` | Lua script in FSUIPC7 writes a file. Works, ~1 update/s, needs licensed FSUIPC. Kept for comparison. |
-| `FsuipcClientSource` | compiled out | Needs the non-redistributable FSUIPC .NET DLL. |
+| `SimConnectSource` | **the live route** | Reads LVARs directly. Native P/Invoke into `SimConnect.dll`; no managed wrapper. Values pushed by the sim per frame. |
 | `MockSource` | `--mock` | Synthetic A320 brake cycle for bench work. |
+
+The FSUIPC Lua bridge was built, measured and removed - see `docs/decisions.md`
+#8 for the numbers before considering it again.
 
 Raw names are the simulator's (`N_HYD_PRESSURE_BRAKE_ACCU`). Nothing else in
 the system ever sees them.
@@ -69,8 +70,8 @@ is shared by every panel unchanged. See `firmware/`.
 ### 5. Desktop app (`SimDeck.App`)
 
 WPF window over the hub: devices, variables (discovery and probing), firmware
-repository, settings, log, and one gauge preview. The preview exists to check
-calibration without hardware; it is not how panels are defined.
+repository, settings, log. **It contains no panel-specific code.** Panel
+rendering and calibration live in `SimDeck.Bench` (see `docs/status.md`).
 
 ## Key design decisions
 
@@ -94,7 +95,6 @@ See `docs/decisions.md` for the full log. The ones that shape everything:
 | 27500 | UDP | hub control plane (in) |
 | 27501 | UDP | module control + data (in, on the module) |
 | 27502 | TCP | firmware images served to modules |
-| 27510/27511 | UDP loopback | legacy FSUIPC Lua bridge only |
 
 ## Data folder
 

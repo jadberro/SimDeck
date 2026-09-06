@@ -15,11 +15,6 @@
             BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
       <StackPanel Margin="0,10" HorizontalAlignment="Center">
         <RadioButton Style="{StaticResource RailButton}" GroupName="nav" IsChecked="True"
-                     ToolTip="Panel" Command="{Binding GoPanel}">
-          <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="16"
-                     Foreground="{StaticResource Fg}"/>
-        </RadioButton>
-        <RadioButton Style="{StaticResource RailButton}" GroupName="nav"
                      ToolTip="Devices" Command="{Binding GoDevices}">
           <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" FontSize="16"
                      Foreground="{StaticResource Fg}"/>
@@ -81,7 +76,6 @@
       </Border>
 
       <Grid Grid.Row="1">
-        <v:PanelView        Visibility="{Binding IsPanel,    Converter={StaticResource BoolToVis}}"/>
         <v:DevicesView      Visibility="{Binding IsDevices,  Converter={StaticResource BoolToVis}}"/>
         <v:DeviceDetailView Visibility="{Binding IsDetail,   Converter={StaticResource BoolToVis}}"/>
         <v:VariablesView    Visibility="{Binding IsVariables, Converter={StaticResource BoolToVis}}"/>

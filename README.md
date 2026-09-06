@@ -28,7 +28,7 @@ you need to build, install and connect it.
 
 ```
 src/        SimDeck.Core (engine, cross-platform) and SimDeck.App (WPF)
-tests/      73 checks, no test framework needed: dotnet run --project tests/SimDeck.Core.Tests
+tests/      83 checks, no test framework needed: dotnet run --project tests/SimDeck.Core.Tests
 installer/  Inno Setup script
 firmware/   ESP32 client library and the first panel sketch
 artwork/    face extraction, geometry measurement, calibration renders

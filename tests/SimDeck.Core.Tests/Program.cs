@@ -133,91 +133,28 @@ Console.WriteLine("firmware image names");
           && !OtaTracker.IsNewer("2026.09.05", "2026.09.06"));
 }
 
-Console.WriteLine("fsuipc file bridge");
+Console.WriteLine("protocol v1 is frozen");
 {
-    var bridgeDir = Path.Combine(Path.GetTempPath(), "simdeck_bridge_" + Guid.NewGuid().ToString("N")[..8]);
-    var src = new FsuipcLuaSource(bridgeDir);
-    src.Start();
-    var status = Path.Combine(bridgeDir, "status.txt");
+    // These values are the contract between this app, the Python bench tools
+    // and every panel's firmware. Changing one silently breaks hardware that
+    // is already flashed and in a cockpit. If a change is genuinely needed,
+    // bump Protocol.Version and support both - do not edit these numbers.
+    Check("version == 1", Protocol.Version == 1);
+    Check("header == 8 bytes", Protocol.HeaderLen == 8);
+    Check("magic == 0x5A", Protocol.DataMagic == 0x5A);
+    Check("control port == 27500", Protocol.CtrlPort == 27500);
+    Check("module port == 27501", Protocol.ModulePort == 27501);
+    Check("http port == 27502", Protocol.HttpPort == 27502);
+    Check("max slots == 16", Protocol.MaxSlots == 16);
+    Check("flag sim ok == 0x01", Protocol.FlagSimOk == 0x01);
+    Check("flag profile ok == 0x02", Protocol.FlagProfileOk == 0x02);
 
-    // A file without #END was caught mid-write and must be ignored, not
-    // parsed as a set of variables that suddenly vanished.
-    File.WriteAllText(status, "#SEQ 1\n#AC Fenix A320\n#N 2\nFNX_A=1.0\n");
-    Thread.Sleep(200);
-    Check("incomplete file ignored", !src.Connected && src.Heartbeats == 0);
-
-    File.WriteAllText(status,
-        "#SEQ 2\n#AC Fenix A320 IAE\n#N 2\nFNX_A=12.5\nFNX_B=-3.25\n#END\n");
-    Thread.Sleep(250);
-
-    Check("complete file marks connected", src.Connected);
-    Check("aircraft read", src.Aircraft == "Fenix A320 IAE", src.Aircraft);
-    Check("watch count read", src.WatchCount == 2, src.WatchCount.ToString());
-    var bs = src.Read();
-    Check("value read", bs.ContainsKey("FNX_A") && Math.Abs(bs["FNX_A"] - 12.5) < 0.001);
-    Check("negative value read", Math.Abs(bs["FNX_B"] + 3.25) < 0.001);
-    Check("comment lines are not variables", !bs.Keys.Any(k => k.StartsWith("#")));
-
-    var beats = src.Heartbeats;
-    File.WriteAllText(status,
-        "#SEQ 3\n#AC Fenix A320 IAE\n#N 2\nFNX_A=99\nFNX_B=-3.25\n#END\n");
-    Thread.Sleep(250);
-    Check("new sequence counts as a beat", src.Heartbeats > beats);
-
-    // writes and commands are queued to a file, so two in quick succession
-    // cannot overwrite one another
-    src.TryWrite("FNX_TEST", 1);
-    src.TryWrite("FNX_OTHER", 0);
-    var cmds = File.ReadAllLines(Path.Combine(bridgeDir, "command.txt"));
-    Check("commands are appended, not overwritten", cmds.Length == 2, $"{cmds.Length}");
-    Check("command format", cmds[0].StartsWith("SET FNX_TEST="), cmds[0]);
-
-    // an error reported by the script must surface, not hide in a log
-    File.WriteAllText(status,
-        "#SEQ 4\n#AC Fenix A320 IAE\n#N 2\n#ERR attempt to index a nil value\nFNX_A=1\n#END\n");
-    Thread.Sleep(250);
-    Check("script error surfaced",
-          src.ScriptError.Contains("nil value"), src.ScriptError);
-
-    File.WriteAllText(status, "#SEQ 5\n#AC Fenix A320 IAE\n#N 2\nFNX_A=1\n#END\n");
-    Thread.Sleep(250);
-    Check("script error cleared on recovery", src.ScriptError.Length == 0);
-
-    // timing fields must be picked up, and must not be mistaken for variables
-    File.WriteAllText(status,
-        "#SEQ 6\n#AC Fenix A320 IAE\n#N 2\n#MS 940\n#RD 900\n#IO 12\nFNX_A=1\n#END\n");
-    Thread.Sleep(250);
-    Check("loop timing read", src.LoopMs == 940, src.LoopMs.ToString());
-    Check("read timing read", src.ReadMs == 900, src.ReadMs.ToString());
-    Check("write timing read", src.WriteMs == 12, src.WriteMs.ToString());
-    Check("timing markers are not variables",
-          !src.Read().Keys.Any(k => k.StartsWith("#")));
-
-    // The two rates must be measured separately: a bridge writing quickly
-    // while values sit still means the ceiling is upstream in FSUIPC.
-    for (int i = 10; i < 20; i++)
-    {
-        // same value every time - writes happen, nothing changes
-        File.WriteAllText(status,
-            $"#SEQ {i}\n#AC Fenix A320 IAE\n#N 1\nFNX_A=42\n#END\n");
-        Thread.Sleep(60);
-    }
-    var writesOnly = src.BeatHz;
-    var changesOnly = src.ValueHz;
-    Check("writes counted", writesOnly > 3, $"{writesOnly:0.0}/s");
-    Check("unchanged values do not count as changes",
-          changesOnly < writesOnly, $"beats {writesOnly:0.0} vs values {changesOnly:0.0}");
-
-    for (int i = 20; i < 30; i++)
-    {
-        File.WriteAllText(status,
-            $"#SEQ {i}\n#AC Fenix A320 IAE\n#N 1\nFNX_A={i}\n#END\n");
-        Thread.Sleep(60);
-    }
-    Check("changing values are counted", src.ValueHz > 2, $"{src.ValueHz:0.0}/s");
-
-    src.Dispose();
-    try { Directory.Delete(bridgeDir, true); } catch { }
+    // A known frame, byte for byte. Any layout change breaks this.
+    var golden = Convert.ToHexString(
+        Protocol.EncodeFrame(1234, Protocol.FlagSimOk,
+                             new[] { 2947f, 2698f, 2713f })).ToLowerInvariant();
+    Check("golden frame unchanged",
+          golden == "5a01d204030100000030384500a0284500902945", golden);
 }
 
 Console.WriteLine("lvar catalog");
@@ -257,6 +194,11 @@ Console.WriteLine();
 Console.WriteLine("integration (real hub, fake module on loopback)");
 var (ip, ifail) = await SimDeck.Core.Tests.Integration.Run();
 passed += ip; failed += ifail;
+
+Console.WriteLine();
+Console.WriteLine("robustness (sim drops, module reboots, bad input)");
+var (rp, rf) = await SimDeck.Core.Tests.Robustness.Run();
+passed += rp; failed += rf;
 
 Console.WriteLine();
 Console.WriteLine($"{passed} passed, {failed} failed");

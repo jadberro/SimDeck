@@ -40,11 +40,15 @@ public static class Integration
             "brake.left_psi":  { "name": "MOCK_BRAKE_L_PSI", "scale": 1.0 },
             "brake.right_psi": { "name": "MOCK_BRAKE_R_PSI", "scale": 1.0 }
           },
-          "inputs": {}
+          "inputs": {
+            "park_brake": { "name": "MOCK_PARK_BRAKE", "scale": 1.0 },
+            "baro_knob":  { "name": "MOCK_BARO", "scale": 0.01 }
+          }
         }
         """);
 
-        using var hub = new HubService(new MockSource(), profileDir, fwDir);
+        var mock = new MockSource();
+        using var hub = new HubService(mock, profileDir, fwDir);
         hub.Start();
         await Task.Delay(400);
 
@@ -171,6 +175,25 @@ public static class Integration
         }
 
         Check("manifest version recorded", entry.Version == "1.2.0");
+
+        // ---- input path: module event -> profile lookup -> sim write -------
+        // Never exercised before this. A panel button is worthless if the
+        // value does not reach the simulator, and the mapping is the part
+        // most likely to be wrong.
+        Ctrl(new { t = "ev", id = "accu-01", @in = "park_brake", v = 1 });
+        Ctrl(new { t = "ev", id = "accu-01", @in = "baro_knob", v = 2992 });
+        Ctrl(new { t = "ev", id = "accu-01", @in = "not_mapped", v = 1 });
+        await Task.Delay(300);
+
+        var writes = mock.Writes;
+        Check("button event reaches the sim",
+              writes.Any(w => w.name == "MOCK_PARK_BRAKE" && Math.Abs(w.value - 1) < 1e-9),
+              string.Join(", ", writes.Select(w => $"{w.name}={w.value}")));
+        Check("input scale is applied",
+              writes.Any(w => w.name == "MOCK_BARO" && Math.Abs(w.value - 29.92) < 1e-6),
+              string.Join(", ", writes.Select(w => $"{w.name}={w.value}")));
+        Check("unmapped input is ignored, not guessed",
+              writes.Count == 2, $"{writes.Count} writes");
 
         try { Directory.Delete(root, true); } catch { }
         return (passed, failed);

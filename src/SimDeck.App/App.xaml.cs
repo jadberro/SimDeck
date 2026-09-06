@@ -104,15 +104,7 @@ public partial class App : Application
 
         Settings = AppSettings.Load();
 
-        var useMock = e.Args.Contains("--mock");
-
-        // Both sides derive this from LOCALAPPDATA, so there is nothing to
-        // configure and nothing to get out of step.
-        var bridgeDir = Path.Combine(DataDir, "bridge");
-
-        IDataSource source = useMock
-            ? new MockSource()
-            : SourceFactory.CreateLive(bridgeDir, e.Args.Contains("--fsuipc"));
+        IDataSource source = SourceFactory.Create(e.Args.Contains("--mock"));
 
         _vm = new MainViewModel(source, profileDir, firmwareDir);
         _vm.Start();

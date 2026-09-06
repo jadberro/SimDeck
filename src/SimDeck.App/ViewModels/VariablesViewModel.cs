@@ -68,26 +68,12 @@ public sealed class VariablesViewModel : ObservableObject
                 return;
             }
 
-            switch (_hub.Source)
-            {
-                case FsuipcLuaSource lua:
-                    Busy = true;
-                    Status = "Scanning…";
-                    lua.RequestScan();
-                    break;
-                case SimConnectSource:
-                    // SimConnect can read any variable you name but has no
-                    // call to list them, so there is nothing to scan.
-                    Status = "SimConnect cannot list variables - there is no such "
-                           + "call. Use 'Read from aircraft files', which is more "
-                           + "reliable anyway.";
-                    break;
-
-                default:
-                    Status = "This source cannot list variables. Use "
-                           + "'Read from aircraft files' instead.";
-                    break;
-            }
+            // SimConnect can read any variable you name but has no call to
+            // enumerate them, so there is nothing to scan for. Reading the
+            // aircraft's own files is the route, and it is more reliable
+            // anyway - it works with the sim closed.
+            Status = "SimConnect cannot list variables - there is no such call. "
+                   + "Use 'Read from aircraft files' instead.";
         });
 
         // The Lua scan needs ipc.getLvarList, which some FSUIPC builds do not
@@ -164,28 +150,6 @@ public sealed class VariablesViewModel : ObservableObject
             _hub.ClearProbes();
             foreach (var r in _all) r.Probed = false;
         });
-
-        if (_hub.Source is FsuipcLuaSource src)
-        {
-            src.ScanCompleted += (_, _) =>
-                System.Windows.Application.Current?.Dispatcher.Invoke(LoadScan);
-        }
-    }
-
-    private void LoadScan()
-    {
-        Busy = false;
-        if (_hub.Source is not FsuipcLuaSource lua) return;
-
-        var names = lua.AllLvars;
-        if (names.Count == 0)
-        {
-            Status = "The scan returned nothing. Your FSUIPC build may not "
-                   + "expose ipc.getLvarList — check the FSUIPC log.";
-            return;
-        }
-
-        Load(names, $"{names.Count} variables from the simulator.");
     }
 
     /// <summary>

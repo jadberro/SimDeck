@@ -2,6 +2,17 @@
 
 _As of 6 September 2026._
 
+## Phase 1 complete - PC app stabilised
+
+- Panel-specific code removed from the app; gauge renderer moved to
+  `src/SimDeck.Bench/` ready for Phase 2
+- FSUIPC route removed entirely; SimConnect is the only live source
+- Protocol frozen at v1, asserted by a golden-frame test
+- Input path (`ev` → profile → sim write) implemented and tested
+- Robustness suite: sim restart, profile reload, aircraft change, module
+  power-cycle, duplicate ids, oversized subscriptions, malformed packets
+- 83 tests, no flakes over repeated runs
+
 ## Working, verified on real hardware / real sim
 
 - SimDeck builds from `build.cmd` on Windows; installer produced by Inno Setup
@@ -11,7 +22,7 @@ _As of 6 September 2026._
 - On-screen accumulator/brake gauge with the real face artwork, calibrated
 - Variables page: read names from aircraft files, watch live values
 - Tray, close-to-tray, launch at startup, crash log
-- 73 automated tests in `SimDeck.Core.Tests`, including a loopback
+- 83 automated tests in `SimDeck.Core.Tests`, including a loopback
   integration run (discovery, 30 Hz rate check, OTA download + SHA-256)
 
 ## Written, not yet exercised
@@ -30,10 +41,16 @@ _As of 6 September 2026._
 
 ## Next steps, in order
 
-1. Board arrives → flash Waveshare test firmware → confirm screen
-2. Firmware template for the 1.85" board: ESP-IDF, ST77916 QSPI, TCA9554
-   reset, LVGL, `SimDeckClient` ported from Arduino APIs, face at 360,
-   pointers as filled polygons with the piecewise mapping
-3. First OTA round trip
-4. Octagonal bezel STL, 63.5 mm with 4 corner holes
-5. Second instrument
+**Phase 2 - `SimDeck.Bench`.** A separate app that *is* a panel: speaks the
+protocol over a real socket, shows values, fires input events, accepts OTA,
+and renders a face from `geometry.json`. Lets panels be built and calibrated
+with no ESP32 present.
+
+**Phase 3 - panel template.** `SimDeckPanel` library (network, values,
+inputs, OTA, identify - nothing else), a copyable template project, then the
+first real panel for the 1.85" board.
+
+**Phase 4 - bring-up.** Waveshare test firmware → template → real panel →
+first OTA.
+
+Then: octagonal bezel STL (63.5 mm, 4 corner holes), second instrument.

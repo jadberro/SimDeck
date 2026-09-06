@@ -48,9 +48,18 @@ public sealed class MockSource : IDataSource
         };
     }
 
+    private readonly List<(string name, double value)> _writes = new();
+
+    /// <summary>Everything written, in order. Lets the input path be asserted
+    /// end to end without a simulator.</summary>
+    public IReadOnlyList<(string name, double value)> Writes
+    {
+        get { lock (_writes) return _writes.ToArray(); }
+    }
+
     public bool TryWrite(string name, double value)
     {
-        Console.WriteLine($"[mock] write {name} = {value}");
+        lock (_writes) _writes.Add((name, value));
         return true;
     }
 }

@@ -113,3 +113,38 @@ generic per-hardware firmware, and hub-served faces. Rejected in favour of
 self-contained panel firmware sharing `SimDeckClient`. Simpler system, every
 piece has one job, and nothing about a panel's appearance can ever require a
 hub change. Cost: reassigning a screen is a reflash (OTA makes that trivial).
+
+### 16. The app contains no panel-specific code
+
+`GaugeControl` and the Panels page are gone from `SimDeck.App`. The gauge
+renderer moved to `SimDeck.Bench`, where it is a bench instrument rather than
+a feature implying the hub understands gauges. The app is now Devices,
+Variables, Firmware, Settings, Log - and nothing about a new panel can require
+changing it.
+
+### 17. FSUIPC removed entirely
+
+Source, Lua script, installer and docs deleted; ~600 lines and a whole class
+of confusing failure gone. SimConnect is the only live route. The measurements
+that justified this are in #8 and stay here as the record.
+
+### 18. Protocol frozen at v1
+
+The constants and a golden frame are asserted by tests. Changing one silently
+breaks hardware already flashed and sitting in a cockpit. If a change is ever
+needed, bump `Protocol.Version` and support both - do not edit the numbers.
+
+### 19. Inputs are tested end to end
+
+`ev` → profile `inputs` → sim write had never been exercised. Testing it found
+that `TryWrite` only worked for variables already being *read*, so an
+input-only variable failed silently. Definitions are now created on demand.
+
+### 20. Robustness cases are tested, and tests wait on conditions
+
+Sim restart, profile edit mid-stream, aircraft change, module power-cycle,
+duplicate ids, oversized subscriptions, malformed packets. Writing them found
+that a fixed `Task.Delay` is a flaky test on a slower machine; the suite waits
+for conditions instead. Modelling a module that pings - as a real one does -
+also exposed that the first version of the test had been asserting against an
+already-timed-out module.

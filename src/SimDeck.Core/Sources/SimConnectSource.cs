@@ -321,12 +321,33 @@ public sealed class SimConnectSource : IDataSource
         lock (_lock) return new Dictionary<string, double>(_values);
     }
 
+    /// <summary>
+    /// Write a value back to an LVAR.
+    ///
+    /// A definition is created on demand if the name is not already being
+    /// read. Input-only variables - a button that writes but is never
+    /// displayed - are never in the watchlist, so requiring one here meant
+    /// every such input failed silently.
+    /// </summary>
     public bool TryWrite(string name, double value)
     {
         if (_handle == IntPtr.Zero || !_open) return false;
 
         uint id;
-        lock (_lock) if (!_nameToId.TryGetValue(name, out id)) return false;
+        lock (_lock)
+        {
+            if (!_nameToId.TryGetValue(name, out id))
+            {
+                id = _nextId++;
+                _nameToId[name] = id;
+                _idToName[id] = name;
+                SimConnect_AddToDataDefinition(_handle, id, "L:" + name, "number",
+                                               TypeFloat64, 0f, Unused);
+                // Deliberately no RequestDataOnSimObject: this definition is
+                // for writing only, and requesting it would add a stream of
+                // frames nobody reads.
+            }
+        }
 
         var buf = Marshal.AllocHGlobal(8);
         try

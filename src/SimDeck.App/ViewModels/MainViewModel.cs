@@ -8,7 +8,7 @@ using System.IO;
 
 namespace SimDeck.App.ViewModels;
 
-public enum Page { Panel, Devices, DeviceDetail, Variables, Firmware, Settings }
+public enum Page { Devices, DeviceDetail, Variables, Firmware, Settings }
 
 public sealed class MainViewModel : ObservableObject
 {
@@ -59,21 +59,6 @@ public sealed class MainViewModel : ObservableObject
         ? "Closing the window keeps SimDeck running in the notification area, so your panels stay live. Quit from the tray icon."
         : "Closing the window quits SimDeck. Your panels will stop updating.";
 
-    private double _panelAccum, _panelLeft, _panelRight;
-    private bool _panelLive;
-    private string _panelSubtitle = "";
-    private string _accumText = "—", _leftText = "—", _rightText = "—";
-
-    public double PanelAccum => _panelAccum;
-    public double PanelLeft => _panelLeft;
-    public double PanelRight => _panelRight;
-    public bool PanelLive => _panelLive;
-
-    public string PanelSubtitle { get => _panelSubtitle; set => Set(ref _panelSubtitle, value); }
-    public string AccumText { get => _accumText; set => Set(ref _accumText, value); }
-    public string LeftText  { get => _leftText;  set => Set(ref _leftText, value); }
-    public string RightText { get => _rightText; set => Set(ref _rightText, value); }
-
     private string _bridgeLine = "";
     private string _bridgeHint = "";
 
@@ -89,13 +74,12 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (!Set(ref _page, value)) return;
-            Raise(nameof(IsPanel)); Raise(nameof(IsDevices)); Raise(nameof(IsDetail));
+            Raise(nameof(IsDevices)); Raise(nameof(IsDetail));
             Raise(nameof(IsVariables)); Raise(nameof(IsFirmware));
             Raise(nameof(IsSettings));
         }
     }
 
-    public bool IsPanel     => _page is Page.Panel;
     public bool IsDevices   => _page is Page.Devices;
     public bool IsDetail    => _page is Page.DeviceDetail;
     public bool IsVariables => _page is Page.Variables;
@@ -112,7 +96,6 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand OpenDevice { get; }
     public RelayCommand Back { get; }
     public RelayCommand GoDevices { get; }
-    public RelayCommand GoPanel { get; }
     public RelayCommand GoVariables { get; }
     public RelayCommand GoFirmware { get; }
     public RelayCommand GoSettings { get; }
@@ -127,10 +110,6 @@ public sealed class MainViewModel : ObservableObject
         Hub = new HubService(source, profileDir, firmwareDir);
         Vars = new VariablesViewModel(Hub);
 
-        // The on-screen gauge is not a connected module, so the hub would
-        // otherwise have no reason to poll anything for it.
-        Hub.AddVirtualSubscription("brake.accum_psi", "brake.left_psi",
-                                   "brake.right_psi");
         Hub.Log += (_, e) => System.Windows.Application.Current?.Dispatcher.Invoke(() =>
         {
             Log.Insert(0, e.Message);
@@ -143,7 +122,6 @@ public sealed class MainViewModel : ObservableObject
         });
         Back = new RelayCommand(_ => CurrentPage = Page.Devices);
         GoDevices = new RelayCommand(_ => CurrentPage = Page.Devices);
-        GoPanel = new RelayCommand(_ => CurrentPage = Page.Panel);
         GoVariables = new RelayCommand(_ => CurrentPage = Page.Variables);
         GoFirmware = new RelayCommand(_ => CurrentPage = Page.Firmware);
         GoSettings = new RelayCommand(_ => CurrentPage = Page.Settings);
@@ -236,7 +214,6 @@ public sealed class MainViewModel : ObservableObject
         ProfileLine = Hub.Profile?.Name ?? "no profile";
 
         UpdateBridgeStatus();
-        UpdatePanel();
         Vars.Refresh();
 
         var manifest = Hub.Repo.All();
@@ -293,6 +270,28 @@ public sealed class MainViewModel : ObservableObject
     private AircraftProfile? Profile => Hub.Profile;
 
     /// <summary>
+    /// Show whatever the source says about itself, then add the one thing it
+    /// cannot know: whether an aircraft profile matched.
+    ///
+    /// This used to type-test for the Lua bridge, which meant any other source
+    /// fell through to a message about mock mode that made no sense.
+    /// </summary>
+    private void UpdateBridgeStatus()
+    {
+        var status = Hub.Source.Status;
+        BridgeLine = status.Line;
+
+        if (status.Hint.Length > 0) { BridgeHint = status.Hint; return; }
+
+        BridgeHint = Profile is null
+            ? $"Connected, but no aircraft profile matches '{Hub.Source.Aircraft}'. "
+              + "Until one does, nothing is polled."
+            : "";
+    }
+
+    private AircraftProfile? Profile => Hub.Profile;
+
+    /// <summary>
     /// Resolve the three values right now, with no formatting and no property
     /// notifications.
     ///
@@ -300,39 +299,6 @@ public sealed class MainViewModel : ObservableObject
     /// refresh, so the needles were chasing a target that only moved four
     /// times a second and the motion came out in visible steps.
     /// </summary>
-    public (double accum, double left, double right, bool live) SamplePanel()
-    {
-        var a = Hub.ResolveLogical("brake.accum_psi");
-        if (!Hub.Source.Connected || float.IsNaN(a)) return (0, 0, 0, false);
-
-        var l = Hub.ResolveLogical("brake.left_psi");
-        var r = Hub.ResolveLogical("brake.right_psi");
-        return (a, float.IsNaN(l) ? 0 : l, float.IsNaN(r) ? 0 : r, true);
-    }
-
-    private void UpdatePanel()
-    {
-        var a = Hub.ResolveLogical("brake.accum_psi");
-        var l = Hub.ResolveLogical("brake.left_psi");
-        var r = Hub.ResolveLogical("brake.right_psi");
-
-        static string Fmt(float v) => float.IsNaN(v) ? "—" : $"{v:0} psi";
-        AccumText = Fmt(a);
-        LeftText = Fmt(l);
-        RightText = Fmt(r);
-
-        _panelLive = Hub.Source.Connected && !float.IsNaN(a);
-
-        PanelSubtitle = Profile is null
-            ? $"No profile matches '{Hub.Source.Aircraft}'. Nothing to show yet."
-            : !Hub.Source.Connected
-                ? "Waiting for the sim."
-                : float.IsNaN(a)
-                    ? "Connected, but brake.accum_psi is not resolving. Check the "
-                      + "variable names in the profile."
-                    : $"Live from {Profile.Name}.";
-    }
-
     private void RefreshFirmware(Dictionary<string, FirmwareEntry> manifest,
                                  IReadOnlyList<ModuleInfo> live)
     {
