@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- Drop FSUIPCClient.dll into lib\ and it is picked up automatically.
+       No flags to remember, and the build still works without it. -->
+  <PropertyGroup Condition="Exists('$(MSBuildThisFileDirectory)..\..\lib\FSUIPCClient.dll')">
+    <DefineConstants>$(DefineConstants);FSUIPC_CLIENT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)..\..\lib\FSUIPCClient.dll')">
+    <Reference Include="FSUIPCClient">
+      <HintPath>$(MSBuildThisFileDirectory)..\..\lib\FSUIPCClient.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

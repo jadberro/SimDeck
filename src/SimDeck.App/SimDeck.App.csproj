@@ -1,0 +1,93 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+
+    <!-- WinForms is here only for NotifyIcon. Using it instead of a tray
+         package keeps this app on zero NuGet dependencies, which is worth
+         more than a slightly nicer API. -->
+    <UseWindowsForms>true</UseWindowsForms>
+
+    <AssemblyName>SimDeck</AssemblyName>
+    <Version>1.0.0</Version>
+    <Company>SimDeck</Company>
+    <Product>SimDeck</Product>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <!-- Conditional so a missing icon is a warning-free no-op rather than
+       MSB3552, which fails the build before a single file compiles. -->
+  <PropertyGroup Condition="Exists('simdeck.ico')">
+    <ApplicationIcon>simdeck.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- UseWindowsForms adds System.Windows.Forms and System.Drawing to the
+       implicit usings, which collide with WPF on UserControl, Button, Label,
+       TextBox, Panel, ProgressBar, Color, Pen, Application, MessageBox and
+       plenty more. WinForms is referenced here for exactly one type,
+       NotifyIcon, so drop the global imports and let App.xaml.cs ask for
+       them explicitly. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimDeck.Core\SimDeck.Core.csproj" />
+  </ItemGroup>
+
+  <!-- Routed Gothic: a digitisation of the Gorton / Leroy engraving lettering
+       that MS33558 specifies for panel markings. SIL Open Font License 1.1;
+       the licence text ships beside it as the OFL requires. Embedded as a
+       resource so the app needs nothing installed. -->
+  <!-- The dial face is a photograph of the real instrument with the pointers
+       removed. Embedded as a resource; regenerate with artwork/from_reference.py -->
+  <ItemGroup>
+    <Resource Include="faces\accu_panel.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\fonts\routed-gothic.ttf">
+      <Link>fonts\routed-gothic.ttf</Link>
+    </Resource>
+    <Content Include="..\..\fonts\LICENSE.md">
+      <Link>fonts\ROUTED-GOTHIC-LICENSE.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Native SimConnect.dll must sit beside the executable: the managed
+       wrapper P/Invokes into it. A None item in the referenced Core project
+       does NOT flow through to this project's publish output, so it has to be
+       declared here or a shared build silently ships without it and fails at
+       runtime on the other machine. -->
+  <ItemGroup>
+    <Content Include="..\..\lib\SimConnect.dll"
+             Condition="Exists('..\..\lib\SimConnect.dll')">
+      <Link>SimConnect.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="simdeck.ico" Condition="Exists('simdeck.ico')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="profiles\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,35 @@
+{
+  "name": "Fenix A32X (MSFS)",
+
+  "_comment": [
+    "Variable names confirmed against a live Fenix A320 IAE.",
+    "",
+    "Fenix reports these in THOUSANDS of psi - the accumulator read 3.24 and",
+    "the brakes 2.103 with the park brake set - so scale is 1000 to get psi.",
+    "The dial face is marked PSI x 1000 and divides by 1000 again for the",
+    "needle, which is why the numbers look circular. They are not: the wire",
+    "protocol carries psi so a future panel with a different scale still works.",
+    "",
+    "Fenix prefixes are short: N_ for numeric, B_ for boolean, S_ for switch,",
+    "CB_ for circuit breakers. N_HYD_PRESSURE_BRAKE_ACCU is the whole name."
+  ],
+
+  "match": ["fenix", "fnx", "a320", "a321", "a319"],
+
+  "vars": {
+    "brake.accum_psi": {
+      "name": "N_HYD_PRESSURE_BRAKE_ACCU",
+      "scale": 1000.0, "offset": 0.0, "clamp": [0, 4000]
+    },
+    "brake.left_psi": {
+      "name": "N_HYD_PRESSURE_BRAKE_LEFT",
+      "scale": 1000.0, "offset": 0.0, "clamp": [0, 3000]
+    },
+    "brake.right_psi": {
+      "name": "N_HYD_PRESSURE_BRAKE_RIGHT",
+      "scale": 1000.0, "offset": 0.0, "clamp": [0, 3000]
+    }
+  },
+
+  "inputs": {}
+}

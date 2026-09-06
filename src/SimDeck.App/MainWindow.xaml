@@ -1,0 +1,93 @@
+<Window x:Class="SimDeck.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:SimDeck.App.Views"
+        Title="SimDeck by Jad Berro" Height="700" Width="980" MinHeight="480" MinWidth="720"
+        Background="{StaticResource Bg}" WindowStartupLocation="CenterScreen">
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="54"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <Border Grid.Column="0" Background="{StaticResource Rail}"
+            BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+      <StackPanel Margin="0,10" HorizontalAlignment="Center">
+        <RadioButton Style="{StaticResource RailButton}" GroupName="nav" IsChecked="True"
+                     ToolTip="Panel" Command="{Binding GoPanel}">
+          <TextBlock Text="&#xE9D9;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                     Foreground="{StaticResource Fg}"/>
+        </RadioButton>
+        <RadioButton Style="{StaticResource RailButton}" GroupName="nav"
+                     ToolTip="Devices" Command="{Binding GoDevices}">
+          <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                     Foreground="{StaticResource Fg}"/>
+        </RadioButton>
+        <RadioButton Style="{StaticResource RailButton}" GroupName="nav"
+                     ToolTip="Variables" Command="{Binding GoVariables}">
+          <TextBlock Text="&#xE71C;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                     Foreground="{StaticResource Fg}"/>
+        </RadioButton>
+        <RadioButton Style="{StaticResource RailButton}" GroupName="nav"
+                     ToolTip="Firmware" Command="{Binding GoFirmware}">
+          <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                     Foreground="{StaticResource Fg}"/>
+        </RadioButton>
+        <RadioButton Style="{StaticResource RailButton}" GroupName="nav"
+                     ToolTip="Settings" Command="{Binding GoSettings}">
+          <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="16"
+                     Foreground="{StaticResource Fg}"/>
+        </RadioButton>
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
+      <Border Grid.Row="0" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1"
+              Padding="18,12">
+        <StackPanel Orientation="Horizontal">
+          <Border CornerRadius="10" Padding="9,3" Margin="0,0,6,0" Background="#1D242B">
+            <StackPanel Orientation="Horizontal">
+              <Ellipse Width="7" Height="7" Margin="0,0,6,0" VerticalAlignment="Center">
+                <Ellipse.Style>
+                  <Style TargetType="Ellipse">
+                    <Setter Property="Fill" Value="{StaticResource Bad}"/>
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding SourceOk}" Value="True">
+                        <Setter Property="Fill" Value="{StaticResource Ok}"/>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Ellipse.Style>
+              </Ellipse>
+              <TextBlock Text="{Binding SourceLine}" FontSize="11"
+                         Foreground="{StaticResource Dim}"/>
+            </StackPanel>
+          </Border>
+          <Border CornerRadius="10" Padding="9,3" Margin="0,0,6,0" Background="#1D242B">
+            <TextBlock Text="{Binding AircraftLine}" FontSize="11"
+                       Foreground="{StaticResource Dim}"/>
+          </Border>
+          <Border CornerRadius="10" Padding="9,3" Background="#1D242B">
+            <TextBlock Text="{Binding ProfileLine}" FontSize="11"
+                       Foreground="{StaticResource Dim}"/>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <Grid Grid.Row="1">
+        <v:PanelView        Visibility="{Binding IsPanel,    Converter={StaticResource BoolToVis}}"/>
+        <v:DevicesView      Visibility="{Binding IsDevices,  Converter={StaticResource BoolToVis}}"/>
+        <v:DeviceDetailView Visibility="{Binding IsDetail,   Converter={StaticResource BoolToVis}}"/>
+        <v:VariablesView    Visibility="{Binding IsVariables, Converter={StaticResource BoolToVis}}"/>
+        <v:FirmwareView     Visibility="{Binding IsFirmware, Converter={StaticResource BoolToVis}}"/>
+        <v:SettingsView     Visibility="{Binding IsSettings, Converter={StaticResource BoolToVis}}"/>
+      </Grid>
+    </Grid>
+  </Grid>
+</Window>

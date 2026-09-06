@@ -1,0 +1,11 @@
+{
+  "name": "Mock source",
+  "match": ["simdeck mock bench"],
+  "priority": 100,
+  "vars": {
+    "brake.accum_psi": { "name": "MOCK_ACCUM_PSI", "scale": 1.0, "clamp": [0, 4000] },
+    "brake.left_psi":  { "name": "MOCK_BRAKE_L_PSI", "scale": 1.0, "clamp": [0, 3000] },
+    "brake.right_psi": { "name": "MOCK_BRAKE_R_PSI", "scale": 1.0, "clamp": [0, 3000] }
+  },
+  "inputs": {}
+}

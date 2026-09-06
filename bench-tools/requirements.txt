@@ -1,0 +1,6 @@
+# Core hub needs nothing outside the standard library.
+#
+# Desktop app (app.py) extras:
+pywebview>=4.4      # native window; on Windows uses the Edge WebView2 runtime
+pystray>=0.19       # notification-area icon
+pillow>=10.0        # tray icon artwork
