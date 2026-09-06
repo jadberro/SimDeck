@@ -191,7 +191,7 @@ cannot brick it.
 | Folder | What |
 |---|---|
 | `src\` | The PC application. `SimDeck.Core` is the engine, `SimDeck.App` is the window. |
-| `tests\` | 35 automated checks. `build.cmd` runs them. |
+| `tests\` | 73 automated checks. `build.cmd` runs them. |
 | `installer\` | Inno Setup script. |
 | `firmware\` | ESP32 code. `SimDeckClient` is reusable by every future panel. |
 | `artwork\` | Generates the dial face and the matching firmware geometry. |
@@ -273,7 +273,7 @@ If nothing appears at all, the build did not produce an executable — run
 ## Honest status
 
 **Tested and working:** the engine, the protocol, firmware updates, profile
-matching, timing. 35 automated checks, including a full run where a
+matching, timing. 73 automated checks, including a full run where a
 simulated panel connects, streams at 30Hz, and completes an update.
 
 **Written but never compiled:** the window itself. I had no Windows machine,

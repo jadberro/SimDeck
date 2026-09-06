@@ -1,3 +1,7 @@
+> **Superseded.** An early description of the C# app, written before the
+> SimConnect source replaced FSUIPC. Kept for the reasoning it records.
+> For the current system see [`docs/architecture.md`](../architecture.md).
+
 # SimDeck (C#)
 
 The shipping application. One .NET service for every module in the cockpit.

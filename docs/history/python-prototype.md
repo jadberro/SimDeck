@@ -1,3 +1,8 @@
+> **Superseded.** This describes the original Python hub and the FSUIPC Lua
+> bridge, both of which have been replaced. Kept because the bench tools in
+> `bench-tools/` still work this way. For the current system see
+> [`docs/architecture.md`](../architecture.md).
+
 # SimDeck
 
 One PC-side service for every module in the cockpit, plus module #1: the

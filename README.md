@@ -22,6 +22,7 @@ you need to build, install and connect it.
 | [`docs/sharing.md`](docs/sharing.md) | giving a build to someone else |
 | [`docs/troubleshooting.md`](docs/troubleshooting.md) | by symptom |
 | [`docs/status.md`](docs/status.md) | what works, what does not, what is next |
+| `docs/history/` | superseded designs, kept for the reasoning they record |
 
 ## Layout
 
