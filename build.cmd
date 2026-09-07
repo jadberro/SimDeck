@@ -36,10 +36,12 @@ REM ---------- 2. publish ----------
 echo   [2/3] Building the application...
 if exist publish rmdir /s /q publish
 dotnet publish src\SimDeck.App -c Release -o publish >> "%LOG%" 2>&1
+dotnet publish src\SimDeck.Bench -c Release -o publish >> "%LOG%" 2>&1
 
 REM Check for the file itself, not just the exit code. An exit code can lie;
 REM a missing executable cannot.
 if not exist "%APPEXE%" goto :publishfailed
+if not exist "%~dp0publish\SimDeck.Bench.exe" goto :publishfailed
 
 REM ---------- 3. installer ----------
 echo   [3/3] Building the installer...

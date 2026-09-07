@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>SimDeck.Bench</AssemblyName>
+    <Version>1.0.0</Version>
+    <Company>SimDeck</Company>
+    <Product>SimDeck.Bench</Product>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SimDeck.Core\SimDeck.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="faces\accu_panel.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\fonts\routed-gothic.ttf">
+      <Link>fonts\routed-gothic.ttf</Link>
+    </Resource>
+  </ItemGroup>
+
+</Project>

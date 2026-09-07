@@ -52,11 +52,6 @@
        that MS33558 specifies for panel markings. SIL Open Font License 1.1;
        the licence text ships beside it as the OFL requires. Embedded as a
        resource so the app needs nothing installed. -->
-  <!-- The dial face is a photograph of the real instrument with the pointers
-       removed. Embedded as a resource; regenerate with artwork/from_reference.py -->
-  <ItemGroup>
-    <Resource Include="faces\accu_panel.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="..\..\fonts\routed-gothic.ttf">
