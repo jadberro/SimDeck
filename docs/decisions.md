@@ -148,3 +148,19 @@ that a fixed `Task.Delay` is a flaky test on a slower machine; the suite waits
 for conditions instead. Modelling a module that pings - as a real one does -
 also exposed that the first version of the test had been asserting against an
 already-timed-out module.
+
+### 21. A pre-flight checker instead of hoping
+
+`SimDeck.App` targets net8.0-windows and cannot be compiled on a Linux
+machine, so edits to it were being verified by eye - and a whole duplicated
+method block got through, which the compiler caught only on Windows.
+`tools/preflight.py` now checks for duplicate members per class, malformed
+XAML, properties set twice, missing `System.IO` imports and references to
+deleted types.
+
+Writing it was instructive twice over. A brace-counting check needs a
+left-to-right scanner, not regex passes: stripping strings first makes the
+char literal `'"'` open a phantom string, and stripping chars first makes the
+apostrophe in `"simulator's"` open a phantom char literal. Both orders
+produced confident, wrong reports on good files. The tool is self-tested by
+injecting the real bug and confirming it is caught.

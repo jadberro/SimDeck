@@ -74,7 +74,7 @@ public partial class App : Application
             if (args.ExceptionObject is Exception ex) Fatal(ex, "running");
         };
 
-        try { Startup(e); }
+        try { Boot(e); }
         catch (Exception ex)
         {
             Fatal(ex, "starting up");
@@ -82,7 +82,11 @@ public partial class App : Application
         }
     }
 
-    private void Startup(StartupEventArgs e)
+    /// <summary>
+    /// Named Boot, not Startup: Application already has a Startup member, and
+    /// shadowing it produced CS0108.
+    /// </summary>
+    private void Boot(StartupEventArgs e)
     {
 
         // One instance only. A second hub would bind-fail on udp/27500 and

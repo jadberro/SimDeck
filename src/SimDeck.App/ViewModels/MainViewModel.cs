@@ -269,36 +269,6 @@ public sealed class MainViewModel : ObservableObject
 
     private AircraftProfile? Profile => Hub.Profile;
 
-    /// <summary>
-    /// Show whatever the source says about itself, then add the one thing it
-    /// cannot know: whether an aircraft profile matched.
-    ///
-    /// This used to type-test for the Lua bridge, which meant any other source
-    /// fell through to a message about mock mode that made no sense.
-    /// </summary>
-    private void UpdateBridgeStatus()
-    {
-        var status = Hub.Source.Status;
-        BridgeLine = status.Line;
-
-        if (status.Hint.Length > 0) { BridgeHint = status.Hint; return; }
-
-        BridgeHint = Profile is null
-            ? $"Connected, but no aircraft profile matches '{Hub.Source.Aircraft}'. "
-              + "Until one does, nothing is polled."
-            : "";
-    }
-
-    private AircraftProfile? Profile => Hub.Profile;
-
-    /// <summary>
-    /// Resolve the three values right now, with no formatting and no property
-    /// notifications.
-    ///
-    /// The gauge calls this every frame. It used to be fed from the 250ms UI
-    /// refresh, so the needles were chasing a target that only moved four
-    /// times a second and the motion came out in visible steps.
-    /// </summary>
     private void RefreshFirmware(Dictionary<string, FirmwareEntry> manifest,
                                  IReadOnlyList<ModuleInfo> live)
     {

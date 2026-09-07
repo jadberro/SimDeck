@@ -5,13 +5,16 @@ One Windows service reads the sim and streams values over Wi-Fi to small
 ESP32 panels that each draw one instrument. First instrument: the Airbus
 A320 accumulator / brake pressure triple indicator, from the Fenix A320.
 
-**New here? Read [`START-HERE.md`](START-HERE.md).** It is the only document
-you need to build, install and connect it.
+**Building or using it?** Read [`START-HERE.md`](START-HERE.md).
+
+**Taking over development?** Read [`HANDOVER.md`](HANDOVER.md), then
+[`docs/decisions.md`](docs/decisions.md). Those two are the whole context.
 
 ## Documentation
 
 | | |
 |---|---|
+| [`HANDOVER.md`](HANDOVER.md) | picking the project up cold: state, pitfalls, next work |
 | [`START-HERE.md`](START-HERE.md) | build, install, connect, find variables |
 | [`docs/architecture.md`](docs/architecture.md) | how the pieces fit, and the one rule that matters |
 | [`docs/protocol.md`](docs/protocol.md) | the wire format, byte by byte |
@@ -35,7 +38,7 @@ artwork/    face extraction, geometry measurement, calibration renders
 fonts/      Routed Gothic (OFL)
 lib/        native SimConnect.dll, copied beside the exe at build
 bench-tools/ Python reference hub, same protocol byte-for-byte
-tools/      helper scripts
+tools/      preflight.py - stands in for the compiler on non-Windows machines
 ```
 
 ## Licence

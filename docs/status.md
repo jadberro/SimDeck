@@ -1,6 +1,7 @@
 # Status and roadmap
 
-_As of 6 September 2026._
+_As of 6 September 2026. Handed over at the end of Phase 1 - see
+[`../HANDOVER.md`](../HANDOVER.md)._
 
 ## Phase 1 complete - PC app stabilised
 
