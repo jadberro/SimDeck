@@ -24,3 +24,11 @@ __pycache__/
 # firmware
 firmware/**/build/
 firmware/accu_panel/img_*.c
+firmware/**/wifi_credentials.h
+wifi_credentials.h
+
+# scratch / temp logs
+err.txt
+out.txt
+*.log
+
